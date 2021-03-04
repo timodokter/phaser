@@ -1,1 +1,1 @@
-# phaser-game-01
+# phaser-game-project-template
