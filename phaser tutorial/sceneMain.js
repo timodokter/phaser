@@ -18,6 +18,12 @@ var config = {
 
 var platforms;
 var player;
+var cursors;
+var stars;
+var score = 0;
+var scoreText
+var bombs;
+var gameOver = false;
 
 var game = new Phaser.Game(config);
 
@@ -79,8 +85,66 @@ function create () {
     this.physics.add.collider(player, platforms);
 
     // //star
-    // this.add.image(400, 300, "star")
+    stars = this.physics.add.group({
+        key: "star",
+        repeat: 11,
+        setXY: {x: 12, y: 0, stepX: 70}
+    });
+
+    stars.children.iterate(function (child) {
+        child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8))
+    })
+
+    this.physics.add.collider(stars, platforms);
+
+    this.physics.add.overlap(player, stars, collectStar, null, this);
+
+    function collectStar (player, star) {
+        star.disableBody(true, true)
+
+        score += 10;
+        scoreText.setText("Score: " + score);
+    }
+
+    scoreText = this.add.text(16, 16, "Score: 0", {fontSize: "32px", fill: "#000"});
+
+    bombs = this.physics.add.group();
+
+    this.physics.add.collider(bombs, platforms);
+
+    this.physics.add.collider(player, bombs, hitbomb, null, this);
+
+}
+
+function hitbomb (player, bomb) {
+
+    this.physics.pause();
+
+    player.setTint(0xf0000);
+
+    player.anims.play("turn");
+
+    gameOver = true
+
 }
 
 function update () {
+    cursors = this.input.keyboard.createCursorKeys();
+    if (cursors.left.isDown) {
+        player.setVelocityX(-160);
+
+        player.anims.play("left", true)
+    } else if (cursors.right.isDown) {
+        player.setVelocityX(160);
+
+        player.anims.play("right", true);
+    } else {
+        player.setVelocityX(0);
+
+        player.anims.play("turn");
+    }
+
+    if (cursors.up.isDown && player.body.touching.down) {
+        player.setVelocityY(-330);
+    }
 }
